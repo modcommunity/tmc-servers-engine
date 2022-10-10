@@ -1,0 +1,7 @@
+{
+   "retrieveurl": "https://mydomain.example/servers?sort=laststatupdate",
+   "updateurl": "https://mydomain.example/servers/{id}",
+   "basicauth": false,
+   "token": "",
+   "keyparam": "key"
+}
