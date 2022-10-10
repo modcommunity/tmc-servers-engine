@@ -7,7 +7,7 @@ A Go program that updates server's real-time information such as member/player c
 ### Goal
 The goal of this project is to retrieve servers from the [@modcommunity](https://github.com/modcommunity) and update their real-time information (member counts from Discord servers, game server stats such as player counts, map names, etc.), generate statistics, and more! This project will act as an engine and it will include functionality to select what type of querying system to retrieve server information with. For example, [A2S_INFO](https://developer.valvesoftware.com/wiki/Server_queries) queries which is implemented by the Source Engine and Valve.
 
-## <a href="https://moddingcommunity.com/" target="_blank"><img src="misc/goal.gif" data-canonical-src="https://github.com/gamemann/tmc-servers-engine/misc/goal.gif" /></a>
+## <a href="https://moddingcommunity.com/" target="_blank"><img src="misc/goal_hd.gif" data-canonical-src="https://github.com/gamemann/tmc-servers-engine/misc/goal_hd.gif" /></a>
 
 Each engine type will spawn its own thread and retrieve servers (preferably sorted by the last time the server was queried the specific engine, then updating these values with Unix timestamps when updating a server's information). Support for spawning multiple threads/Go routines will also be added for best multi-threading support. Though, I don't think multiple threads per engine will matter much.
 
