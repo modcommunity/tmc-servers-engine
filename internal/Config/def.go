@@ -11,6 +11,14 @@ type Config struct {
 
 	// For verifying a server.
 	ClaimKeyField string `json:"claimkeyfield"`
+
+	// Server retrieving.
+	MaxServers       uint `json:"maxservers"`
+	MaxServersPerReq uint `json:"maxserverspr"`
+
+	// Query settings.
+	WaitInterval  uint `json:"waitinterval"`
+	FetchInterval uint `json:"fetchinterval"`
 }
 
 func (cfg *Config) SetDefaults() {
@@ -19,4 +27,6 @@ func (cfg *Config) SetDefaults() {
 
 	cfg.RetrieveURL = "https://mydomain.example/servers?sort=laststatupdate"
 	cfg.UpdateURL = "https://mydomain.example/servers/{id}"
+
+	cfg.MaxServers = 40
 }
