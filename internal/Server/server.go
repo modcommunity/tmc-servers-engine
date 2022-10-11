@@ -127,3 +127,10 @@ type Servers struct {
 	TotalPages   int      `json:"totalPages"`
 	Results      []Server `json:"results"`
 }
+
+type QueryResult struct {
+	RealName   string `json:"realname"`
+	PlayerList []User `json:"users"`
+	Players    uint   `json:"players"`
+	PlayersMax uint   `json:"playersmax"`
+}
