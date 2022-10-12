@@ -7,28 +7,50 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 )
 
 // Sends an HTTP(S) request to whatever endpoint specified.
-func SendHTTPReq(endpoint string, request_type string, post_data map[string]string, headers map[string]string) (string, int, error) {
+func SendHTTPReq(endpoint string, request_type string, post_data map[string]string, headers map[string]string, form bool) (string, int, error) {
 	// Initialize data and return code (status code).
 	d := ""
 	rc := -1
+	var req *http.Request
+	var err error
 
-	var post_body io.Reader
+	var post_body_form io.Reader
+	var post_body_json io.Reader
 
 	// Check to see if we need to send post data.
 	if request_type == "POST" || request_type == "PUT" {
-		// Convert to JSON and use as body.
-		j, err := json.Marshal(post_data)
+		// Convert to JSON and use as body.'
+		var j []byte
+		var err error
 
-		if err != nil {
-			return d, rc, err
+		if !form {
+			j, err = json.Marshal(post_data)
+
+			if err != nil {
+				return d, rc, err
+			}
+		} else {
+			urlParams := url.Values{}
+
+			for key, val := range post_data {
+				urlParams.Set(key, val)
+			}
+
+			j = []byte(urlParams.Encode())
 		}
 
 		// Read byte array into IO reader.
-		post_body = bytes.NewBuffer(j)
+		if form {
+			post_body_form = strings.NewReader(string(j))
+		} else {
+			post_body_json = bytes.NewBuffer(j)
+		}
 
 		if err != nil {
 			return d, rc, err
@@ -37,7 +59,11 @@ func SendHTTPReq(endpoint string, request_type string, post_data map[string]stri
 
 	// Setup HTTP request.
 	client := &http.Client{Timeout: time.Second * 5}
-	req, err := http.NewRequest(request_type, endpoint, post_body)
+	if form {
+		req, err = http.NewRequest(request_type, endpoint, post_body_form)
+	} else {
+		req, err = http.NewRequest(request_type, endpoint, post_body_json)
+	}
 
 	// Check for error.
 	if err != nil {

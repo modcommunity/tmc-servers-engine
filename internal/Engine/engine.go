@@ -1,8 +1,8 @@
 package Engine
 
 import (
-	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gamemann/Rust-Auto-Wipe/pkg/debug"
@@ -42,14 +42,19 @@ func (e *QueryEngine) Handler(cfg *Config.Config) {
 
 			// Make queries to retrieve up-to-date server stats/info.
 			if e.ClassName == "A2S" {
-
 				qr, err = e.A2S_Query(srv)
 
 				if err != nil {
 					debug.SendDebugMsg(strconv.FormatUint(uint64(srv.ID), 10), int(cfg.Debug), 2, "Failed to send A2S_INFO request to "+srv.IP+":"+strconv.FormatUint(uint64(srv.Port), 10))
-					fmt.Println(err)
+					debug.SendDebugMsg(strconv.FormatUint(uint64(srv.ID), 10), int(cfg.Debug), 2, err.Error())
 
 					continue
+				}
+
+				// Now check if we should verify the server.
+				if qr.RealName != nil && srv.ClaimKey != nil && strings.Contains(*qr.RealName, *srv.ClaimKey) {
+					one := uint(1)
+					qr.Verified = &one
 				}
 			}
 

@@ -3,6 +3,7 @@ package Engine
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"strconv"
 	"time"
 
@@ -20,7 +21,7 @@ func (e *QueryEngine) IPS4_UpdateServer(cfg Config.Config, results QueryResult, 
 	fullRequestURL := fmt.Sprintf("%s/%d", cfg.UpdateURL, server.ID)
 
 	if cfg.BasicAuth {
-		fullRequestURL = fmt.Sprintf("%s/%d?%s=%s", cfg.UpdateURL, server.ID, cfg.KeyParam, cfg.Token)
+		fullRequestURL = fmt.Sprintf("%s/%d?%s=%s", cfg.UpdateURL, server.ID, url.QueryEscape(cfg.KeyParam), url.QueryEscape(cfg.Token))
 	}
 
 	// Build headers.
@@ -31,8 +32,8 @@ func (e *QueryEngine) IPS4_UpdateServer(cfg Config.Config, results QueryResult, 
 		headers["Authorization"] = cfg.Token
 	}
 
-	// We're sending JSON ;)
-	//headers["Content-Type"] = "application/json"
+	// We must send an encoded URL form.
+	headers["Content-Type"] = "application/x-www-form-urlencoded"
 
 	// If our players max value is 0, it indicates the server is offline.
 	if results.PlayersMax == nil || *results.PlayersMax < 1 {
@@ -69,7 +70,7 @@ func (e *QueryEngine) IPS4_UpdateServer(cfg Config.Config, results QueryResult, 
 	post_data["laststatupdate"] = strconv.FormatUint(uint64(time.Now().Unix()), 10)
 
 	// Now send the request (POST for updating).
-	data, rc, err := TMCHttp.SendHTTPReq(fullRequestURL, "POST", post_data, headers)
+	data, rc, err := TMCHttp.SendHTTPReq(fullRequestURL, "POST", post_data, headers, true)
 
 	if err != nil {
 		debug.SendDebugMsg(id_str, int(cfg.Debug), 1, "Failed to update server.")
@@ -80,7 +81,8 @@ func (e *QueryEngine) IPS4_UpdateServer(cfg Config.Config, results QueryResult, 
 	// Use debug package I made from another project :)
 	debug.SendDebugMsg(id_str, int(cfg.Debug), 1, "Updated server "+server.IP+":"+strconv.FormatUint(uint64(server.Port), 10))
 	debug.SendDebugMsg(id_str, int(cfg.Debug), 2, "Return Code => "+strconv.FormatUint(uint64(rc), 10))
-	debug.SendDebugMsg(id_str, int(cfg.Debug), 2, "Body => "+data)
+	debug.SendDebugMsg(id_str, int(cfg.Debug), 2, "Request URL => "+fullRequestURL)
+	debug.SendDebugMsg(id_str, int(cfg.Debug), 3, "Body => "+data)
 
 	return err
 }
@@ -110,14 +112,14 @@ func (e *QueryEngine) IPS4_FetchServers(cfg Config.Config) error {
 	// Loop through pages.
 	for page < pages {
 		// Compile URL we're going to send to.
-		fullRequestURL := fmt.Sprintf("%s?sort=%s&page=%d", cfg.UpdateURL, cfg.Sort, page)
+		fullRequestURL := fmt.Sprintf("%s?sort=%s&page=%d", cfg.UpdateURL, url.QueryEscape(cfg.Sort), page)
 
 		if cfg.BasicAuth {
-			fullRequestURL = fmt.Sprintf("%s?sort=%s&key=%s&page=%d", cfg.UpdateURL, cfg.Sort, cfg.Token, page)
+			fullRequestURL = fmt.Sprintf("%s?sort=%s&key=%s&page=%d", cfg.UpdateURL, url.QueryEscape(cfg.Sort), url.QueryEscape(cfg.Token), page)
 		}
 
 		// Now send the request (POST for updating).
-		data, rc, err := TMCHttp.SendHTTPReq(fullRequestURL, "GET", nil, headers)
+		data, rc, err := TMCHttp.SendHTTPReq(fullRequestURL, "GET", nil, headers, false)
 
 		if err != nil {
 			debug.SendDebugMsg("ALL", int(cfg.Debug), 2, "Error sending HTTP request => "+fullRequestURL)
@@ -127,8 +129,9 @@ func (e *QueryEngine) IPS4_FetchServers(cfg Config.Config) error {
 
 		// Use debug package I made from another project :)
 		debug.SendDebugMsg("ALL", int(cfg.Debug), 1, "Retrieving servers from IPS 4 API..")
-		debug.SendDebugMsg("ALL", int(cfg.Debug), 2, "Return Code => "+strconv.FormatUint(uint64(rc), 10))
-		debug.SendDebugMsg("ALL", int(cfg.Debug), 2, "Body => "+data)
+		debug.SendDebugMsg("ALL", int(cfg.Debug), 3, "Return Code => "+strconv.FormatUint(uint64(rc), 10))
+		debug.SendDebugMsg("ALL", int(cfg.Debug), 3, "Request URL => "+fullRequestURL)
+		debug.SendDebugMsg("ALL", int(cfg.Debug), 4, "Body => "+data)
 
 		var resp Servers
 

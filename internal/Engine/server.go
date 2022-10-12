@@ -24,6 +24,8 @@ type Server struct {
 	Playersmax     interface{} `json:"playersmax"`
 	Mapname        interface{} `json:"mapname"`
 	Club           int         `json:"club"`
+	ClaimKey       *string     `json:"claimkey"`
+	Verified       int         `json:"verified"`
 	Realclub       struct {
 		Classname       string      `json:"classname"`
 		ParentClassname interface{} `json:"parentClassname"`
