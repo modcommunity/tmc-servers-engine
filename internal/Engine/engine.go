@@ -1,32 +1,68 @@
 package Engine
 
 import (
-	"github.com/gamemann/tmc-servers-engine/internal/Engine/A2S"
-	"github.com/gamemann/tmc-servers-engine/internal/Server"
+	"fmt"
+	"strconv"
+	"time"
+
+	"github.com/gamemann/Rust-Auto-Wipe/pkg/debug"
+	"github.com/gamemann/tmc-servers-engine/internal/Config"
 )
 
-type Engine struct {
+type QueryEngine struct {
 	ClassName  string
-	ServerList []Server.Server
+	APIName    string
+	ServerList []Server
 }
 
 type QueryResult struct {
-	RealName   string        `json:"realname"`
-	PlayerList []Server.User `json:"users"`
-	Players    uint          `json:"players"`
-	PlayersMax uint          `json:"playersmax"`
-	MapName    string        `json:"mapname"`
+	RealName   *string `json:"realname"`
+	Users      *[]User `json:"users"`
+	Players    *uint   `json:"players"`
+	PlayersMax *uint   `json:"playersmax"`
+	MapName    *string `json:"mapname"`
+
+	// These are for verification.
+	Verified *uint `json:"verified"`
+	NoVerify *uint `json:"noverify"`
 }
 
-// Technically we can support any protocol (e.g. UDP or TCP) :)
-func (e Engine) MakeQuery(ip string, port uint) QueryResult {
-	var query QueryResult
+func (e *QueryEngine) Handler(cfg *Config.Config) {
+	// Create a loop since this is another thread.
+	for {
+		// Fetch servers.
+		if e.APIName == "IPS4" {
+			e.IPS4_FetchServers(*cfg)
+		}
 
-	// We must check the classname.
-	if e.ClassName == "A2S" {
-		query = A2S.Query(ip, port)
+		// Loop through each server.
+		for _, srv := range e.ServerList {
+			var qr QueryResult
+			var err error
+
+			// Make queries to retrieve up-to-date server stats/info.
+			if e.ClassName == "A2S" {
+
+				qr, err = e.A2S_Query(srv)
+
+				if err != nil {
+					debug.SendDebugMsg(strconv.FormatUint(uint64(srv.ID), 10), int(cfg.Debug), 2, "Failed to send A2S_INFO request to "+srv.IP+":"+strconv.FormatUint(uint64(srv.Port), 10))
+					fmt.Println(err)
+
+					continue
+				}
+			}
+
+			// Send an update request if needed.
+			if e.APIName == "IPS4" {
+				e.IPS4_UpdateServer(*cfg, qr, srv)
+			}
+
+			// Wait time.
+			time.Sleep(time.Duration(cfg.WaitInterval))
+		}
+
+		// Fetch time.
+		time.Sleep(time.Duration(cfg.FetchInterval))
 	}
-
-	return query
-
 }

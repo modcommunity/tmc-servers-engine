@@ -1,21 +1,25 @@
-package A2S
+package Engine
 
 import (
 	"fmt"
 
-	"github.com/gamemann/tmc-servers-engine/internal/Engine"
 	"github.com/rumblefrog/go-a2s"
 )
 
 // The ID of the engine stored in the TMC database (1 = A2S Engine).
 const ID = 1
 
-func Query(ip string, port uint) (Engine.QueryResult, error) {
-	var result Engine.QueryResult
+func (e *QueryEngine) A2S_Query(server Server) (QueryResult, error) {
+	var result QueryResult
 	var general_info *a2s.ServerInfo
 	var err error
 
-	conn_str := fmt.Sprintf("%s:%d", ip, int(port))
+	var realname string
+	var players uint
+	var playersmax uint
+	var mapname string
+
+	conn_str := fmt.Sprintf("%s:%d", server.IP, int(server.Port))
 
 	// Use A2S package to send query with challenge support!
 	a2s_query, err := a2s.NewClient(conn_str, a2s.SetMaxPacketSize(14000))
@@ -35,11 +39,17 @@ func Query(ip string, port uint) (Engine.QueryResult, error) {
 		goto end
 	}
 
+	// Copy result variables and cast to what we need.
+	realname = general_info.Name
+	players = uint(general_info.Players)
+	playersmax = uint(general_info.MaxPlayers)
+	mapname = general_info.Map
+
 	// Map values.
-	result.RealName = general_info.Name
-	result.Players = uint(general_info.Players)
-	result.PlayersMax = uint(general_info.MaxPlayers)
-	result.MapName = general_info.Map
+	result.RealName = &realname
+	result.Players = &players
+	result.PlayersMax = &playersmax
+	result.MapName = &mapname
 
 end:
 	return result, err

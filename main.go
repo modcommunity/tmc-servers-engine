@@ -9,7 +9,9 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/gamemann/Rust-Auto-Wipe/pkg/debug"
 	"github.com/gamemann/tmc-servers-engine/internal/Config"
+	"github.com/gamemann/tmc-servers-engine/internal/Engine"
 )
 
 const HELP_MENU = "Help Options\n\t-cfg= --cfg -cfg <path> > Path to config file override.\n\t-l --list > Print out full config.\n\t-v --version > Print out version and exit.\n\t-h --help > Display help menu.\n\n"
@@ -31,7 +33,7 @@ func main() {
 	flag.BoolVar(&help, "h", false, "Print out help menu and exit.")
 
 	// Look for 'cfg' flag in command line arguments (default path: ./settings.json).
-	configFile := flag.String("cfg", "settings.json", "The path to the Rust Auto Wipe config file.")
+	configFile := flag.String("cfg", "settings.json", "Path to config file.")
 
 	// Parse flags.
 	flag.Parse()
@@ -90,6 +92,20 @@ func main() {
 		fmt.Println(string(json_data))
 
 		os.Exit(0)
+	}
+
+	// Add our engines!
+	var engines []*Engine.QueryEngine
+
+	// A2S (Steam Server/Master Server)
+	engines = append(engines, &Engine.QueryEngine{ClassName: "A2S", APIName: "IPS4"})
+
+	// Loop through each engine.
+	for _, e := range engines {
+		// Launch handler for this engine in a separate thread!
+		go e.Handler(&cfg)
+
+		debug.SendDebugMsg("ALL", int(cfg.Debug), 1, "Spawned engine thread (Class Name => "+e.ClassName+". API Name => "+e.APIName+").")
 	}
 
 	// Signal.

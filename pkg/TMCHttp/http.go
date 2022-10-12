@@ -11,7 +11,7 @@ import (
 )
 
 // Sends an HTTP(S) request to whatever endpoint specified.
-func SendHTTPReq(endpoint string, request_type string, post_data map[string]interface{}, headers map[string]string) (string, int, error) {
+func SendHTTPReq(endpoint string, request_type string, post_data map[string]string, headers map[string]string) (string, int, error) {
 	// Initialize data and return code (status code).
 	d := ""
 	rc := -1
