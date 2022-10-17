@@ -95,10 +95,10 @@ func (e *QueryEngine) Handler(cfg *Config.Config) {
 			}
 
 			// Wait time.
-			time.Sleep(time.Duration(cfg.WaitInterval))
+			time.Sleep(time.Duration(cfg.WaitInterval) * time.Millisecond)
 		}
 
 		// Fetch time.
-		time.Sleep(time.Duration(cfg.FetchInterval))
+		time.Sleep(time.Duration(cfg.FetchInterval) * time.Millisecond)
 	}
 }
