@@ -1,7 +1,16 @@
 {
-   "retrieveurl": "https://mydomain.example/servers?sort=laststatupdate",
-   "updateurl": "https://mydomain.example/servers/{id}",
+   "debug": 0,
+   "retrieveurl": "https://mydomain.example/servers/servers",
+   "updateurl": "https://mydomain.example/servers/servers",
+   "posthook": "https://mydomain.example/servers/stats",
    "basicauth": false,
    "token": "",
-   "keyparam": "key"
+   "keyparam": "key",
+   "claimkeyfield": "claimkey",
+   "maxservers": 40,
+   "maxserverspr": 40,
+   "sort": "laststatupdate ASC",
+   "waitinterval": 1000,
+   "fetchinterval": 1000,
+   "posthookinterval": 5
 }

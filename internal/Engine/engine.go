@@ -1,12 +1,14 @@
 package Engine
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gamemann/Rust-Auto-Wipe/pkg/debug"
 	"github.com/gamemann/tmc-servers-engine/internal/Config"
+	"github.com/gamemann/tmc-servers-engine/pkg/TMCHttp"
 )
 
 type QueryEngine struct {
@@ -27,7 +29,10 @@ type QueryResult struct {
 	NoVerify *uint `json:"noverify"`
 }
 
+var lastupdate map[int]int
+
 func (e *QueryEngine) Handler(cfg *Config.Config) {
+	lastupdate = make(map[int]int)
 	// Create a loop since this is another thread.
 	for {
 		// Fetch servers.
@@ -39,6 +44,7 @@ func (e *QueryEngine) Handler(cfg *Config.Config) {
 		for _, srv := range e.ServerList {
 			var qr QueryResult
 			var err error
+			now := time.Now().Unix()
 
 			// Make queries to retrieve up-to-date server stats/info.
 			if e.ClassName == "A2S" {
@@ -61,6 +67,31 @@ func (e *QueryEngine) Handler(cfg *Config.Config) {
 			// Send an update request if needed.
 			if e.APIName == "IPS4" {
 				e.IPS4_UpdateServer(*cfg, qr, srv)
+			}
+
+			// Post hook.
+			if lastupdate[srv.ID] < 1 || uint(now) > uint(lastupdate[srv.ID])+cfg.PostHookInterval {
+
+				fullRequestURL := fmt.Sprintf("%s/%d", cfg.PostHook, srv.ID)
+
+				if cfg.BasicAuth {
+					fullRequestURL = fmt.Sprintf("%s/%d?key=%s", cfg.PostHook, srv.ID, cfg.Token)
+				}
+
+				// Send POST request (e.g. for stats updating).
+				d, rc, err := TMCHttp.SendHTTPReq(fullRequestURL, "GET", nil, nil, false)
+
+				if err != nil {
+					debug.SendDebugMsg(strconv.FormatUint(uint64(srv.ID), 10), int(cfg.Debug), 1, "Failed to send post hook request.")
+				} else {
+					debug.SendDebugMsg(strconv.FormatUint(uint64(srv.ID), 10), int(cfg.Debug), 2, "Sent post hook (GET request).")
+				}
+
+				debug.SendDebugMsg(strconv.FormatUint(uint64(srv.ID), 10), int(cfg.Debug), 2, "Request URL => "+fullRequestURL)
+				debug.SendDebugMsg(strconv.FormatUint(uint64(srv.ID), 10), int(cfg.Debug), 2, "Return Code => "+strconv.FormatUint(uint64(rc), 10))
+				debug.SendDebugMsg(strconv.FormatUint(uint64(srv.ID), 10), int(cfg.Debug), 3, "Return Body => "+d)
+
+				lastupdate[srv.ID] = int(now)
 			}
 
 			// Wait time.

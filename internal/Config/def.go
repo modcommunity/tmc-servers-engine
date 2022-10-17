@@ -4,6 +4,7 @@ type Config struct {
 	Debug       uint   `json:"debug"`
 	RetrieveURL string `json:"retrieveurl"`
 	UpdateURL   string `json:"updateurl"`
+	PostHook    string `json:"posthook"`
 	BasicAuth   bool   `json:"basicauth"`
 	Token       string `json:"token"`
 
@@ -19,8 +20,9 @@ type Config struct {
 	Sort             string `json:"sort"`
 
 	// Query settings.
-	WaitInterval  uint `json:"waitinterval"`
-	FetchInterval uint `json:"fetchinterval"`
+	WaitInterval     uint `json:"waitinterval"`
+	FetchInterval    uint `json:"fetchinterval"`
+	PostHookInterval uint `json:"posthookinterval"`
 }
 
 func (cfg *Config) SetDefaults() {
@@ -28,15 +30,17 @@ func (cfg *Config) SetDefaults() {
 	cfg.ClaimKeyField = "claimkey"
 
 	// Both same value for now, but still want them to be different config options in case.
-	cfg.RetrieveURL = "https://mydomain.example/servers"
-	cfg.UpdateURL = "https://mydomain.example/servers"
+	cfg.RetrieveURL = "https://mydomain.example/servers/servers"
+	cfg.UpdateURL = "https://mydomain.example/servers/servers"
+	cfg.PostHook = "https://mydomain.example/servers/stats"
 
 	// Retrieving servers from API settings.
 	cfg.MaxServers = 40
 	cfg.MaxServersPerReq = 40
 	cfg.Sort = "laststatupdate ASC"
 
-	// Intervals in milliseconds.
-	cfg.WaitInterval = 1000
-	cfg.FetchInterval = 1000
+	// Intervals.
+	cfg.WaitInterval = 1000  // Milliseconds.
+	cfg.FetchInterval = 1000 // Milliseconds.
+	cfg.PostHookInterval = 5 // Seconds.
 }
