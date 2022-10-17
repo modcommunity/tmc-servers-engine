@@ -10,10 +10,13 @@ General configuration may be found below.
     "debug": 0,
 
     # Retrieve endpoint.
-    "retrieveurl": "https://mydomain.example/servers",
+    "retrieveurl": "https://mydomain.example/servers/servers",
     
     # Update endpoint.
-    "updateurl": "https://mydomain.example/servers",
+    "updateurl": "https://mydomain.example/servers/servers",
+
+    # An endpoint that is executed after updating a server. Includes a min time interval and very great for stats.
+    "posthook": "https://mydomain.example/servers/stats",
 
     # Whether to try basic auth (no Authorization header set; instead, sets a GET query key).
     "basicauth": false,
@@ -41,6 +44,9 @@ General configuration may be found below.
 
     # Fetch interval between retrieving servers in milliseconds.
     "fetchinterval": 1000
+
+    # Seconds in-between post hook calls for the server in seconds.
+    "posthookinterval": 300
 }
 ```
 

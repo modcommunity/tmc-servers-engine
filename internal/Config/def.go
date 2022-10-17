@@ -40,7 +40,7 @@ func (cfg *Config) SetDefaults() {
 	cfg.Sort = "laststatupdate ASC"
 
 	// Intervals.
-	cfg.WaitInterval = 1000  // Milliseconds.
-	cfg.FetchInterval = 1000 // Milliseconds.
-	cfg.PostHookInterval = 5 // Seconds.
+	cfg.WaitInterval = 1000    // Milliseconds.
+	cfg.FetchInterval = 1000   // Milliseconds.
+	cfg.PostHookInterval = 300 // Seconds.
 }
