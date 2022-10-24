@@ -8,6 +8,9 @@ General configuration may be found below.
 {
     # Debug level from 0 - 4.
     "debug": 0,
+    
+    # Endpoint to retrieve engines.
+    "reurl": "https://mydomain.example/servers/engines",
 
     # Retrieve endpoint.
     "retrieveurl": "https://mydomain.example/servers/servers",

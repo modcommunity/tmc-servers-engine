@@ -1,5 +1,6 @@
 {
    "debug": 0,
+   "reurl": "https://mydomain.example/servers/engines",
    "retrieveurl": "https://mydomain.example/servers/servers",
    "updateurl": "https://mydomain.example/servers/servers",
    "posthook": "https://mydomain.example/servers/stats",
