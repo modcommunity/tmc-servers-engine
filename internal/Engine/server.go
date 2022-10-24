@@ -20,6 +20,7 @@ type Server struct {
 	Name           string      `json:"name"`
 	Realname       interface{} `json:"realname"`
 	Laststatupdate int         `json:"laststatupdate"`
+	Laststatentry  int         `json:"laststatentry"`
 	Players        interface{} `json:"players"`
 	Playersmax     interface{} `json:"playersmax"`
 	Mapname        interface{} `json:"mapname"`

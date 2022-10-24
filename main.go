@@ -95,17 +95,23 @@ func main() {
 	}
 
 	// Add our engines!
-	var engines []*Engine.QueryEngine
+	engines, err := Engine.IPS4_GetEngines(&cfg)
 
-	// A2S (Steam Server/Master Server)
-	engines = append(engines, &Engine.QueryEngine{ClassName: "A2S", APIName: "IPS4"})
+	if err != nil {
+		fmt.Println(err)
+
+		os.Exit(1)
+	}
 
 	// Loop through each engine.
-	for _, e := range engines {
-		// Launch handler for this engine in a separate thread!
-		go e.Handler(&cfg)
+	for k, e := range engines {
+		// We don't use anything other than IPS 4 right now, set to IPS 4.
+		engines[k].APIName = "IPS4"
 
-		debug.SendDebugMsg("ALL", int(cfg.Debug), 1, "Spawned engine thread (Class Name => "+e.ClassName+". API Name => "+e.APIName+").")
+		// Launch handler for this engine in a separate thread!
+		go engines[k].Handler(&cfg)
+
+		debug.SendDebugMsg("ALL", int(cfg.Debug), 1, "Spawned engine thread (Class Name => "+e.Class+". API Name => "+e.APIName+").")
 	}
 
 	// Signal.

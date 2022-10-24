@@ -9,7 +9,7 @@ import (
 // The ID of the engine stored in the TMC database (1 = A2S Engine).
 const ID = 1
 
-func (e *QueryEngine) A2S_Query(server Server) (QueryResult, error) {
+func (e *Engine) A2S_Query(server Server) (QueryResult, error) {
 	var result QueryResult
 	var general_info *a2s.ServerInfo
 	var err error

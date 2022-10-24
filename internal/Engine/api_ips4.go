@@ -12,7 +12,7 @@ import (
 	"github.com/gamemann/tmc-servers-engine/pkg/TMCHttp"
 )
 
-func (e *QueryEngine) IPS4_UpdateServer(cfg Config.Config, results QueryResult, server Server) error {
+func (e *Engine) IPS4_UpdateServer(cfg Config.Config, results QueryResult, server Server) error {
 	var err error
 
 	id_str := strconv.FormatUint(uint64(server.ID), 10)
@@ -37,9 +37,12 @@ func (e *QueryEngine) IPS4_UpdateServer(cfg Config.Config, results QueryResult, 
 
 	// If our players max value is 0, it indicates the server is offline.
 	if results.PlayersMax == nil || *results.PlayersMax < 1 {
-		*results.Players = 0
-		*results.MapName = ""
-		*results.Users = nil
+		zero := uint(0)
+		mapName := ""
+
+		results.Players = &zero
+		results.PlayersMax = &zero
+		results.MapName = &mapName
 	}
 
 	// Now build parameters.
@@ -66,6 +69,8 @@ func (e *QueryEngine) IPS4_UpdateServer(cfg Config.Config, results QueryResult, 
 		post_data["verified"] = strconv.FormatUint(uint64(*results.Verified), 10)
 	}
 
+	post_data["laststatentry"] = strconv.FormatUint(uint64(server.Laststatentry), 10)
+
 	// We want to update the last stat time as well!
 	post_data["laststatupdate"] = strconv.FormatUint(uint64(time.Now().Unix()), 10)
 
@@ -87,7 +92,7 @@ func (e *QueryEngine) IPS4_UpdateServer(cfg Config.Config, results QueryResult, 
 	return err
 }
 
-func (e *QueryEngine) IPS4_FetchServers(cfg Config.Config) error {
+func (e *Engine) IPS4_FetchServers(cfg Config.Config) error {
 	var err error
 
 	// Build headers.
@@ -160,4 +165,78 @@ func (e *QueryEngine) IPS4_FetchServers(cfg Config.Config) error {
 	}
 
 	return err
+}
+
+func IPS4_GetEngines(cfg *Config.Config) ([]Engine, error) {
+	var res []Engine
+	var err error
+
+	// Build headers.
+	headers := make(map[string]string, 1)
+
+	// If we're not using basic auth, set authorization header instead.
+	if !cfg.BasicAuth {
+		headers["Authorization"] = cfg.Token
+	}
+
+	// We're accepting and expecting JSON ;)
+	headers["Accept"] = "application/json"
+	headers["Content-Type"] = "application/json"
+
+	// We're going to need to parse with page support.
+	page := 1
+	pages := 10
+
+	debug.SendDebugMsg("ALL", int(cfg.Debug), 1, "Retrieving engines.")
+
+	// Loop through pages.
+	for page < pages {
+		// Compile URL we're going to send to.
+		fullRequestURL := fmt.Sprintf("%s?page=%d", cfg.RetrieveEnginesURL, page)
+
+		if cfg.BasicAuth {
+			fullRequestURL = fmt.Sprintf("%s?key=%s&page=%d", cfg.RetrieveEnginesURL, url.QueryEscape(cfg.Token), page)
+		}
+
+		// Now send the request (POST for updating).
+		data, rc, err := TMCHttp.SendHTTPReq(fullRequestURL, "GET", nil, headers, false)
+
+		if err != nil {
+			debug.SendDebugMsg("ALL", int(cfg.Debug), 2, "Error sending HTTP request => "+fullRequestURL)
+
+			break
+		}
+
+		// Use debug package I made from another project :)
+		debug.SendDebugMsg("ALL", int(cfg.Debug), 1, "Retrieving engines from IPS 4 API..")
+		debug.SendDebugMsg("ALL", int(cfg.Debug), 3, "Return Code => "+strconv.FormatUint(uint64(rc), 10))
+		debug.SendDebugMsg("ALL", int(cfg.Debug), 3, "Request URL => "+fullRequestURL)
+		debug.SendDebugMsg("ALL", int(cfg.Debug), 4, "Body => "+data)
+
+		var resp EngineResult
+
+		// Conversion from JSON.
+		err = json.Unmarshal([]byte(data), &resp)
+
+		if err != nil {
+			debug.SendDebugMsg("ALL", int(cfg.Debug), 2, "Error parsing JSON data. Request => "+fullRequestURL)
+
+			break
+		}
+
+		res = append(res, resp.Results...)
+
+		// Check if max pages needs to be changed.
+		if pages != resp.TotalPages {
+			pages = resp.TotalPages
+		}
+
+		// Increment page count.
+		page++
+
+		// We're going to wait an interval to prevent rate limiting if possible.
+		time.Sleep(time.Duration(cfg.WaitInterval) * time.Millisecond)
+	}
+
+	return res, err
 }

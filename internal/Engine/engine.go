@@ -11,10 +11,21 @@ import (
 	"github.com/gamemann/tmc-servers-engine/pkg/TMCHttp"
 )
 
-type QueryEngine struct {
-	ClassName  string
-	APIName    string
+type Engine struct {
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	Class      string `json:"class"`
+	Verify     int    `json:"verify"`
+	APIName    string `json:"api"`
 	ServerList []Server
+}
+
+type EngineResult struct {
+	Page         int      `json:"page"`
+	PerPage      int      `json:"perPage"`
+	TotalResults int      `json:"totalResults"`
+	TotalPages   int      `json:"totalPages"`
+	Results      []Engine `json:"results"`
 }
 
 type QueryResult struct {
@@ -29,14 +40,12 @@ type QueryResult struct {
 	NoVerify *uint `json:"noverify"`
 }
 
-var lastupdate map[int]int
-
-func (e *QueryEngine) Handler(cfg *Config.Config) {
-	lastupdate = make(map[int]int)
+func (e *Engine) Handler(cfg *Config.Config) {
 	// Create a loop since this is another thread.
 	for {
 		// Fetch servers.
 		if e.APIName == "IPS4" {
+
 			e.IPS4_FetchServers(*cfg)
 		}
 
@@ -47,7 +56,7 @@ func (e *QueryEngine) Handler(cfg *Config.Config) {
 			now := time.Now().Unix()
 
 			// Make queries to retrieve up-to-date server stats/info.
-			if e.ClassName == "A2S" {
+			if e.Class == "A2S" {
 				qr, err = e.A2S_Query(srv)
 
 				if err != nil {
@@ -64,14 +73,21 @@ func (e *QueryEngine) Handler(cfg *Config.Config) {
 				}
 			}
 
+			// Check if we should do a POST hook
+			postHook := false
+
+			if srv.Laststatentry < 1 || uint(now) > uint(srv.Laststatentry)+cfg.PostHookInterval {
+				srv.Laststatentry = int(now)
+				postHook = true
+			}
+
 			// Send an update request if needed.
 			if e.APIName == "IPS4" {
 				e.IPS4_UpdateServer(*cfg, qr, srv)
 			}
 
 			// Post hook.
-			if lastupdate[srv.ID] < 1 || uint(now) > uint(lastupdate[srv.ID])+cfg.PostHookInterval {
-
+			if postHook {
 				fullRequestURL := fmt.Sprintf("%s/%d", cfg.PostHook, srv.ID)
 
 				if cfg.BasicAuth {
@@ -90,8 +106,6 @@ func (e *QueryEngine) Handler(cfg *Config.Config) {
 				debug.SendDebugMsg(strconv.FormatUint(uint64(srv.ID), 10), int(cfg.Debug), 2, "Request URL => "+fullRequestURL)
 				debug.SendDebugMsg(strconv.FormatUint(uint64(srv.ID), 10), int(cfg.Debug), 2, "Return Code => "+strconv.FormatUint(uint64(rc), 10))
 				debug.SendDebugMsg(strconv.FormatUint(uint64(srv.ID), 10), int(cfg.Debug), 3, "Return Body => "+d)
-
-				lastupdate[srv.ID] = int(now)
 			}
 
 			// Wait time.
