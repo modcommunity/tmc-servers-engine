@@ -104,14 +104,14 @@ func main() {
 	}
 
 	// Loop through each engine.
-	for k, e := range engines {
+	for i := 0; i < len(engines); i++ {
 		// We don't use anything other than IPS 4 right now, set to IPS 4.
-		engines[k].APIName = "IPS4"
+		engines[i].APIName = "IPS4"
 
 		// Launch handler for this engine in a separate thread!
-		go engines[k].Handler(&cfg)
+		go engines[i].Handler(&cfg)
 
-		debug.SendDebugMsg("ALL", int(cfg.Debug), 1, "Spawned engine thread (Class Name => "+e.Class+". API Name => "+e.APIName+").")
+		debug.SendDebugMsg("ALL", int(cfg.Debug), 1, "Spawned engine thread (Class Name => "+engines[i].Class+". API Name => "+engines[i].APIName+").")
 	}
 
 	// Signal.
