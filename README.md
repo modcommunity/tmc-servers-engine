@@ -56,7 +56,7 @@ General configuration may be found below.
 ## More Details
 I have been working on an application that lists community and game servers that may be tied by communities (AKA clubs) in [Invision Power Services](https://invisioncommunity.com/). Please see below for a preview of how everything looks as of **October 12th, 2022**. I've been making a lot of great progress on this within a few days. This is being internally developed at the moment, but I will be looking into open-sourcing the application in the future after business-related things are situated in the [@modcommunity](https://github.com/modcommunity) along with ensuring we aren't putting user's security at risk (e.g. having multiple views at source code for any potential vulnerabilities).
 
-<a href="https://www.youtube.com/watch?v=f-HXM6tCOXY" target="_blank"><img src="misc/video_preview.png" data-canonical-src="https://github.com/gamemann/tmc-servers-engine/misc/video_preview.png" /></a>
+<a href="https://www.youtube.com/watch?v=p23e6uXsmtk" target="_blank"><img src="misc/video_preview.png" data-canonical-src="https://github.com/gamemann/tmc-servers-engine/misc/video_preview.png" /></a>
 
 Each engine spawns its own thread and retrieve servers (preferably sorted by the last time the server was queried by the specific engine, then updating these values with Unix timestamps when updating a server's information). Support for spawning multiple threads/Go routines will also be added for best multi-threading support. Though, I don't think multiple threads per engine will matter much at this moment.
 
