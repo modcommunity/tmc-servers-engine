@@ -154,8 +154,14 @@ func (e *Engine) IPS4_FetchServers(cfg Config.Config) error {
 			pages = resp.TotalPages
 		}
 
-		// Now append all servers to the engine server list.
-		e.ServerList = append(e.ServerList, resp.Results...)
+		// Loop through each server and only add the ones we need.
+		for _, s := range resp.Results {
+			if s.Engine != e.ID {
+				continue
+			}
+
+			e.ServerList = append(e.ServerList, s)
+		}
 
 		// Increment page count.
 		page++

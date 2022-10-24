@@ -18,6 +18,7 @@ type Users struct {
 type Server struct {
 	ID             int         `json:"id"`
 	Name           string      `json:"name"`
+	Engine         int         `json:"engine"`
 	Realname       interface{} `json:"realname"`
 	Laststatupdate int         `json:"laststatupdate"`
 	Laststatentry  int         `json:"laststatentry"`
