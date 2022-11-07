@@ -44,13 +44,15 @@ func (e *Engine) A2S_Query(server Server) (QueryResult, error) {
 	player_info, err = a2s_query.QueryPlayer()
 
 	// Loop through each player and add them to users array.
-	for _, ply := range player_info.Players {
-		var usr User
+	if player_info != nil && err != nil {
+		for _, ply := range player_info.Players {
+			var usr User
 
-		// Only set the display name since that's the only information we have.
-		usr.DisplayName = ply.Name
+			// Only set the display name since that's the only information we have.
+			usr.DisplayName = ply.Name
 
-		users = append(users, usr)
+			users = append(users, usr)
+		}
 	}
 
 	// Copy result variables and cast to what we need.
