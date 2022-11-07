@@ -19,7 +19,7 @@ func (e *Engine) A2S_Query(server Server) (QueryResult, error) {
 	var players uint
 	var playersmax uint
 	var mapname string
-	var players_list []User
+	var users []User
 
 	conn_str := fmt.Sprintf("%s:%d", server.IP, int(server.Port))
 
@@ -50,7 +50,7 @@ func (e *Engine) A2S_Query(server Server) (QueryResult, error) {
 		// Only set the display name since that's the only information we have.
 		usr.DisplayName = ply.Name
 
-		players_list = append(players_list, usr)
+		users = append(users, usr)
 	}
 
 	// Copy result variables and cast to what we need.
@@ -64,7 +64,7 @@ func (e *Engine) A2S_Query(server Server) (QueryResult, error) {
 	result.Players = &players
 	result.PlayersMax = &playersmax
 	result.MapName = &mapname
-	result.Users = &players_list
+	result.Users = &users
 
 end:
 	return result, err
