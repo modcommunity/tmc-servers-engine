@@ -44,7 +44,7 @@ func (e *Engine) A2S_Query(server Server) (QueryResult, error) {
 	player_info, err = a2s_query.QueryPlayer()
 
 	// Loop through each player and add them to users array.
-	if player_info != nil && err != nil {
+	if player_info != nil && err == nil {
 		for _, ply := range player_info.Players {
 			var usr User
 
