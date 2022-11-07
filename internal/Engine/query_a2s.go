@@ -12,6 +12,7 @@ const ID = 1
 func (e *Engine) A2S_Query(server Server) (QueryResult, error) {
 	var result QueryResult
 	var general_info *a2s.ServerInfo
+	var player_info *a2s.PlayerInfo
 	var err error
 
 	var realname string
@@ -37,6 +38,16 @@ func (e *Engine) A2S_Query(server Server) (QueryResult, error) {
 
 	if err != nil || general_info == nil {
 		goto end
+	}
+
+	player_info, err = a2s_query.QueryPlayer()
+
+	// Loop through each player and add them to users array.
+	for _, ply := range player_info.Players {
+		var usr User
+
+		// Only set the display name since that's the only information we have.
+		usr.DisplayName = ply.Name
 	}
 
 	// Copy result variables and cast to what we need.

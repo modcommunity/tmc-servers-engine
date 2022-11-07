@@ -74,6 +74,15 @@ func (e *Engine) IPS4_UpdateServer(cfg Config.Config, results QueryResult, serve
 	// We want to update the last stat time as well!
 	post_data["laststatupdate"] = strconv.FormatUint(uint64(time.Now().Unix()), 10)
 
+	// If we have a player list, convert to JSON and store.
+	if results.Users != nil && len(*results.Users) > 0 {
+		json, err := json.Marshal(*results.Users)
+
+		if err == nil {
+			post_data["players_list"] = string(json)
+		}
+	}
+
 	// Now send the request (POST for updating).
 	data, rc, err := TMCHttp.SendHTTPReq(fullRequestURL, "POST", post_data, headers, true)
 

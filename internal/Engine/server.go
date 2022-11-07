@@ -7,8 +7,17 @@ type UserStats struct {
 }
 
 type User struct {
+	// TMC ID - if applicable.
+	TID int `json:"tid"`
+
+	// Steam ID identifier.
 	SteamID64 string `json:"steamid64"`
-	Username  string `json:"username"`
+
+	// Username identifier (useful for games like Minecraft).
+	Username string `json:"username"`
+
+	// Display name.
+	DisplayName string `json:"displayname"`
 }
 
 type Users struct {
