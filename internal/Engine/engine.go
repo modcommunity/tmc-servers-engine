@@ -45,7 +45,6 @@ func (e *Engine) Handler(cfg *Config.Config) {
 	for {
 		// Fetch servers.
 		if e.APIName == "IPS4" {
-
 			e.IPS4_FetchServers(*cfg)
 		}
 
@@ -59,17 +58,15 @@ func (e *Engine) Handler(cfg *Config.Config) {
 			if e.Class == "A2S" {
 				qr, err = e.A2S_Query(srv)
 
-				if err != nil {
-					debug.SendDebugMsg(strconv.FormatUint(uint64(srv.ID), 10), int(cfg.Debug), 2, "Failed to send A2S_INFO request to "+srv.IP+":"+strconv.FormatUint(uint64(srv.Port), 10))
-					debug.SendDebugMsg(strconv.FormatUint(uint64(srv.ID), 10), int(cfg.Debug), 2, err.Error())
-
-					continue
-				}
-
-				// Now check if we should verify the server.
-				if qr.RealName != nil && srv.ClaimKey != nil && strings.Contains(*qr.RealName, *srv.ClaimKey) {
-					one := uint(1)
-					qr.Verified = &one
+				if err == nil {
+					// Now check if we should verify the server.
+					if qr.RealName != nil && srv.ClaimKey != nil && strings.Contains(*qr.RealName, *srv.ClaimKey) {
+						one := uint(1)
+						qr.Verified = &one
+					}
+				} else {
+					debug.SendDebugMsg(strconv.FormatUint(uint64(srv.ID), 10), int(cfg.Debug), 3, "Failed to send A2S_INFO request to "+srv.IP+":"+strconv.FormatUint(uint64(srv.Port), 10))
+					debug.SendDebugMsg(strconv.FormatUint(uint64(srv.ID), 10), int(cfg.Debug), 3, err.Error())
 				}
 			}
 
