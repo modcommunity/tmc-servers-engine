@@ -31,8 +31,8 @@ type Server struct {
 	Realname       interface{} `json:"realname"`
 	Laststatupdate int         `json:"laststatupdate"`
 	Laststatentry  int         `json:"laststatentry"`
-	Players        interface{} `json:"players"`
-	Playersmax     interface{} `json:"playersmax"`
+	Players        uint        `json:"players"`
+	Playersmax     uint        `json:"playersmax"`
 	Mapname        interface{} `json:"mapname"`
 	Club           int         `json:"club"`
 	ClaimKey       *string     `json:"claimkey"`

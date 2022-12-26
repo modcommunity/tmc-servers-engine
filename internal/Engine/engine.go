@@ -76,7 +76,7 @@ func (e *Engine) Handler(cfg *Config.Config) {
 			// Check if we should do a POST hook
 			postHook := false
 
-			if srv.Laststatentry < 1 || uint(now) > uint(srv.Laststatentry)+cfg.PostHookInterval {
+			if srv.Players > 0 && (srv.Laststatentry < 1 || uint(now) > uint(srv.Laststatentry)+cfg.PostHookInterval) {
 				srv.Laststatentry = int(now)
 				postHook = true
 			}
@@ -94,7 +94,7 @@ func (e *Engine) Handler(cfg *Config.Config) {
 					fullRequestURL = fmt.Sprintf("%s/%d?key=%s", cfg.PostHook, srv.ID, cfg.Token)
 				}
 
-				// Send POST request (e.g. for stats updating).
+				// Send post hook request using GET method for stats (e.g. for stats updating).
 				d, rc, err := TMCHttp.SendHTTPReq(fullRequestURL, "GET", nil, nil, false)
 
 				if err != nil {
